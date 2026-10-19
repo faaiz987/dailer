@@ -1,0 +1,138 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 0 0% 100%;
+    --foreground: 240 10% 4%;
+    --card: 0 0% 100%;
+    --card-foreground: 240 10% 4%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 240 10% 4%;
+    --primary: 160 84% 30%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 240 5% 96%;
+    --secondary-foreground: 240 6% 10%;
+    --muted: 240 5% 96%;
+    --muted-foreground: 240 4% 42%;
+    --accent: 240 5% 94%;
+    --accent-foreground: 240 6% 10%;
+    --destructive: 0 72% 45%;
+    --destructive-foreground: 0 0% 100%;
+    --success: 160 84% 30%;
+    --success-foreground: 0 0% 100%;
+    --warning: 35 92% 42%;
+    --warning-foreground: 0 0% 100%;
+    --border: 240 6% 88%;
+    --input: 240 6% 85%;
+    --ring: 160 84% 35%;
+    --radius: 0.5rem;
+  }
+
+  .dark {
+    --background: 240 6% 6%;
+    --foreground: 0 0% 96%;
+    --card: 240 5% 8.5%;
+    --card-foreground: 0 0% 96%;
+    --popover: 240 5% 10%;
+    --popover-foreground: 0 0% 96%;
+    --primary: 160 72% 40%;
+    --primary-foreground: 160 90% 6%;
+    --secondary: 240 4% 14%;
+    --secondary-foreground: 0 0% 94%;
+    --muted: 240 4% 13%;
+    --muted-foreground: 240 5% 63%;
+    --accent: 240 4% 16%;
+    --accent-foreground: 0 0% 96%;
+    --destructive: 0 63% 48%;
+    --destructive-foreground: 0 0% 98%;
+    --success: 160 72% 40%;
+    --success-foreground: 160 90% 6%;
+    --warning: 38 92% 50%;
+    --warning-foreground: 30 90% 8%;
+    --border: 240 4% 16%;
+    --input: 240 4% 20%;
+    --ring: 160 72% 40%;
+  }
+
+  * {
+    @apply border-border;
+  }
+
+  html {
+    color-scheme: light;
+  }
+
+  html.dark {
+    color-scheme: dark;
+  }
+
+  body {
+    @apply bg-background text-foreground antialiased;
+    font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+  }
+
+  ::selection {
+    background: hsl(var(--primary) / 0.3);
+  }
+
+  ::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+  }
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  ::-webkit-scrollbar-thumb {
+    background: hsl(var(--border));
+    border-radius: 8px;
+    border: 2px solid hsl(var(--background));
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: hsl(var(--muted-foreground) / 0.5);
+  }
+}
+
+@layer utilities {
+  .tabular {
+    font-variant-numeric: tabular-nums;
+  }
+
+  .grid-table {
+    display: grid;
+    grid-template-columns: minmax(220px, 2.4fr) minmax(130px, 1.3fr) 132px 82px 86px 88px 128px 74px 142px;
+  }
+
+  .dialog-overlay {
+    animation: overlay-in 120ms ease-out;
+  }
+  .dialog-content {
+    animation: content-in 140ms cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  @keyframes overlay-in {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
+  }
+  @keyframes content-in {
+    from {
+      opacity: 0;
+      transform: translateY(6px) scale(0.985);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0) scale(1);
+    }
+  }
+
+  @media (max-width: 900px) {
+    .grid-table {
+      grid-template-columns: minmax(190px, 2fr) minmax(120px, 1.3fr) 120px 70px 74px 80px 112px 64px 120px;
+    }
+  }
+}
