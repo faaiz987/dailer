@@ -30,12 +30,13 @@ Click **Load sample data** to demo without a file. The sample exercises all 73 c
 - **Hours** are pivoted from `openingHours/0..6` into a per-day map and evaluated in `America/Chicago` for a live Open/Closed/Opens-at pill.
 - **Flags** permanently closed, temporarily closed, Area/empty category and no-phone leads. They remain visible in the list with a badge but are excluded from the dial queue unless “Include flagged” is enabled. DNC is never in a queue.
 - **Dialer** shows one lead at a time with click-to-call `tel:`, copy, maps link, website, claimed badge, price, weekly hours, review bars, about text, notes and queue position.
+- **Dialpad** (the button beside the number, the header button, or `D`) types or pastes any number, shows the E.164 preview and dials through the same `tel:` handoff — prefilled with the current lead's number when opened from the lead card. Useful when your softphone needs DTMF-style entry or the number isn't in your list.
 - **Dispositions** `1`–`6` and `9`: timestamp, attempts++, per-lead history, callback date, DNC confirmation, auto-advance, optional auto-dial. Notes autosave on blur.
 - **Queue builder** filters by category, rating range, review range, claimed, location/zip and text; orders by rank, rating, reviews or a deterministic random seed. Session snapshots keep their own queue and stats.
 - **List view** is a sortable, filterable, virtualized table of every lead (including flagged/DNC).
 - **Due callbacks** surface in the rail, with optional browser notifications. DNC has its own list and an explicit restore flow.
 - **Export** the working CSV (original columns + `status`, `attempts`, `last_called_at`, `next_callback_at`, `notes`, `disposition_history`) or a call-log CSV with one row per attempt.
-- **Keyboard-first**: `Space`/`→` next, `←` back, `1`–`6`/`9` dispositions, `/` search, `?` cheatsheet, `Esc` close dialogs.
+- **Keyboard-first**: `Space`/`→` next, `←` back, `1`–`6`/`9` dispositions, `D` dialpad, `/` search, `?` cheatsheet, `Esc` close dialogs.
 - **Settings**: default country, dark/light theme, dialer mode, callback notifications, optional cloud-phone webhook with a `{phone}` placeholder (GET opens the URL; POST sends `To` / `Phone` as a form body only when you click).
 - Fully responsive: dense desktop CRM layout with a stacked dialer and sticky actions on phones.
 
@@ -83,6 +84,7 @@ src/
   App.tsx                 state, sessions, dispositions, persistence, exports
   components/
     Dialer.tsx            lead card, dispositions, callback/DNC dialogs
+    Dialpad.tsx           manual keypad, E.164 preview, tel:/webhook dialing
     ImportDialog.tsx      dropzone, mapping, options, import receipt
     QueueBuilder.tsx      filters and ordering
     SessionBar.tsx        live session stats
@@ -107,7 +109,7 @@ src/
 ### Notes and limits
 
 - Google Maps exports sometimes store large numeric ids as numbers. If the spreadsheet already lost precision, the textual digits can’t be recovered; Lead Dialer preserves and expands whatever text the export contains and never converts ids to JS numbers.
-- `tel:` links depend on the OS/softphone handler (Dialpad, Aircall, Google Voice, etc.). Auto-dial is opt-in.
+- `tel:` links depend on the OS/softphone handler (Dialpad, Aircall, Google Voice, etc.). Auto-dial is opt-in. The dialpad uses the same handoff; if clicking a number does nothing, set a handler for `tel:` links in your OS or configure the cloud-phone webhook.
 - Browser notifications require permission and a secure context; the optional webhook is the only outbound request and only fires on explicit Click-to-call.
 - IndexedDB may be blocked in strict private/incognito modes. The app reports a failure instead of pretending data was saved.
 - Clearing local data in Settings deletes leads and call history from this browser after a second confirmation. Export first.

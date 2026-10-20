@@ -8,6 +8,7 @@ import {
   Clock,
   ExternalLink,
   Globe,
+  Grid3x3,
   Keyboard,
   MapPin,
   MessageSquare,
@@ -57,6 +58,7 @@ interface DialerProps {
   onOpenShortcuts: () => void;
   onOpenSettings: () => void;
   onWebhookCall: (phone: string) => void;
+  onOpenDialpad: (seed?: string) => void;
   onFocusSearch: () => void;
 }
 
@@ -157,6 +159,7 @@ export function Dialer({
   onOpenShortcuts,
   onOpenSettings,
   onWebhookCall,
+  onOpenDialpad,
   onFocusSearch,
 }: DialerProps) {
   const { push } = useToast();
@@ -302,6 +305,7 @@ export function Dialer({
           onClearFilters={onClearFilters}
           onImport={onImport}
           onLoadSample={onLoadSample}
+          onOpenDialpad={() => onOpenDialpad()}
           onFocusSearch={onFocusSearch}
         />
       </CardShell>
@@ -434,6 +438,14 @@ export function Dialer({
               </div>
             )}
             <div className="flex flex-wrap items-center gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => onOpenDialpad(lead.phone || undefined)}
+                title="Open the dialpad to type or paste a number"
+              >
+                <Grid3x3 /> Dialpad
+              </Button>
               {lead.phone && (
                 <Button variant="outline" size="sm" onClick={copyPhone} title="Copy E.164 number">
                   <ClipboardCopy /> Copy number
@@ -450,7 +462,7 @@ export function Dialer({
             <span className="font-mono">{lead.phone || "—"}</span>
             <span className="text-border">|</span>
             <span>
-              Auto-dial on advance is {settings.dialerMode ? "on" : "off"} — toggle above
+              Click the number to call · auto-dial is {settings.dialerMode ? "on" : "off"}
             </span>
           </div>
         </div>
@@ -810,6 +822,7 @@ function EmptyDialer({
   onClearFilters,
   onImport,
   onLoadSample,
+  onOpenDialpad,
   onFocusSearch,
 }: {
   hasLeads: boolean;
@@ -819,6 +832,7 @@ function EmptyDialer({
   onClearFilters: () => void;
   onImport: () => void;
   onLoadSample: () => void;
+  onOpenDialpad: () => void;
   onFocusSearch: () => void;
 }) {
   if (!hasLeads) {
@@ -838,6 +852,9 @@ function EmptyDialer({
           </Button>
           <Button variant="outline" onClick={onLoadSample}>
             Load sample data
+          </Button>
+          <Button variant="outline" onClick={onOpenDialpad}>
+            <Grid3x3 /> Open dialpad
           </Button>
         </div>
         <div className="mt-6 flex items-center gap-2 text-[11px] text-muted-foreground">

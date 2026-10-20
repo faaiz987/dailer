@@ -30,6 +30,7 @@ export function ShortcutsDialog({ open, onClose }: { open: boolean; onClose: () 
             <Row keys={["→"]} label="Next lead" />
             <Row keys={["←"]} label="Previous lead" alt={<ArrowLeft className="h-3 w-3" />} />
             <Row keys={["/"]} label="Focus queue search" alt={<Search className="h-3 w-3" />} />
+            <Row keys={["D"]} label="Open the dialpad" />
             <Row keys={["?"]} label="This cheatsheet" />
             <Row keys={["Esc"]} label="Close dialog" />
           </div>
@@ -48,7 +49,7 @@ export function ShortcutsDialog({ open, onClose }: { open: boolean; onClose: () 
       <div className="mt-6 rounded-md border bg-muted/30 px-3 py-2.5 text-[11px] leading-relaxed text-muted-foreground">
         Dispositions stamp the time, increment attempts, save the outcome to the lead's history and advance the queue.
         Scheduling a callback with <Kbd>3</Kbd> opens a date picker; <Kbd>9</Kbd> asks for confirmation before the lead
-        is permanently excluded.
+        is permanently excluded. The dialpad dials any number through your phone app, even one that isn't in your list.
       </div>
     </Dialog>
   );

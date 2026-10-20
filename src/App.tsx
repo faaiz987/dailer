@@ -3,6 +3,7 @@ import {
   ChevronDown,
   Download,
   FileSpreadsheet,
+  Grid3x3,
   Keyboard,
   List,
   Moon,
@@ -15,6 +16,7 @@ import {
 } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Dialer } from "./components/Dialer";
+import { Dialpad } from "./components/Dialpad";
 import { DncView } from "./components/DncView";
 import { ImportDialog } from "./components/ImportDialog";
 import { ListView } from "./components/ListView";
@@ -74,6 +76,8 @@ export default function App() {
   const [importOpen, setImportOpen] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [shortcutsOpen, setShortcutsOpen] = useState(false);
+  const [dialpadOpen, setDialpadOpen] = useState(false);
+  const [dialpadSeed, setDialpadSeed] = useState<string | undefined>(undefined);
   const [exportOpen, setExportOpen] = useState(false);
   const [now, setNow] = useState(Date.now());
   const exportRef = useRef<HTMLDivElement>(null);
@@ -591,6 +595,11 @@ export default function App() {
     window.setTimeout(() => document.getElementById("queue-search")?.focus(), 60);
   };
 
+  const openDialpad = (seed?: string) => {
+    setDialpadSeed(seed);
+    setDialpadOpen(true);
+  };
+
   /* ------------------------------- Shortcuts ------------------------------- */
 
   useEffect(() => {
@@ -614,6 +623,10 @@ export default function App() {
       } else if (event.key === "?" && !modalOpen) {
         event.preventDefault();
         setShortcutsOpen(true);
+      } else if (event.key.toLowerCase() === "d" && !modalOpen) {
+        event.preventDefault();
+        setDialpadSeed(undefined);
+        setDialpadOpen(true);
       }
     };
     window.addEventListener("keydown", onKeyDown);
@@ -720,6 +733,25 @@ export default function App() {
               )}
             </div>
             <Button
+              variant="outline"
+              size="sm"
+              onClick={() => openDialpad()}
+              title="Open the dialpad (D)"
+              className="hidden lg:inline-flex"
+            >
+              <Grid3x3 /> Dialpad
+            </Button>
+            <Button
+              variant="outline"
+              size="iconSm"
+              onClick={() => openDialpad()}
+              title="Open the dialpad (D)"
+              aria-label="Open the dialpad"
+              className="lg:hidden"
+            >
+              <Grid3x3 />
+            </Button>
+            <Button
               variant="ghost"
               size="iconSm"
               onClick={() => updateSettings({ theme: settings.theme === "dark" ? "light" : "dark" })}
@@ -732,7 +764,7 @@ export default function App() {
               size="iconSm"
               onClick={() => setShortcutsOpen(true)}
               title="Keyboard shortcuts (?)"
-              className="hidden sm:inline-flex"
+              className="hidden lg:inline-flex"
             >
               <Keyboard />
             </Button>
@@ -816,6 +848,7 @@ export default function App() {
                 onOpenShortcuts={() => setShortcutsOpen(true)}
                 onOpenSettings={() => setSettingsOpen(true)}
                 onWebhookCall={callWebhook}
+                onOpenDialpad={openDialpad}
                 onFocusSearch={focusSearch}
               />
               {leads.length > 0 && (
@@ -919,6 +952,14 @@ export default function App() {
         }}
       />
       <ShortcutsDialog open={shortcutsOpen} onClose={() => setShortcutsOpen(false)} />
+      <Dialpad
+        open={dialpadOpen}
+        onClose={() => setDialpadOpen(false)}
+        initialNumber={dialpadSeed}
+        settings={settings}
+        lead={currentLead}
+        onWebhookCall={callWebhook}
+      />
     </div>
   );
 }
