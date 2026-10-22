@@ -101,11 +101,17 @@ export const DEFAULT_QUEUE: QueueConfig = {
 
 export type WebhookMethod = "GET" | "POST";
 
+/** Where a click-to-call is handed off. */
+export type CallMethod = "tel" | "google-voice" | "mightycall" | "rynga" | "custom";
+
 export interface AppSettings {
   theme: "dark" | "light";
   dialerMode: boolean;
   defaultCountry: string;
   notifications: boolean;
+  callMethod: CallMethod;
+  /** Custom web-dialer URL template containing {phone}. */
+  callUrlTemplate: string;
   webhookUrl: string;
   webhookMethod: WebhookMethod;
 }
@@ -115,6 +121,8 @@ export const DEFAULT_SETTINGS: AppSettings = {
   dialerMode: false,
   defaultCountry: "US",
   notifications: false,
+  callMethod: "tel",
+  callUrlTemplate: "",
   webhookUrl: "",
   webhookMethod: "POST",
 };

@@ -38,8 +38,9 @@ import {
   saveSettings,
   wipeAll,
 } from "./lib/db";
+import { buildCallTarget, type CallTarget } from "./lib/call";
 import { buildCallLogCsv, buildWorkingCsv, downloadCsv, exportStamp, mergeHeaderNames } from "./lib/export";
-import { digitsOnly, formatPhone } from "./lib/format";
+import { formatPhone } from "./lib/format";
 import { buildLeads, parseFile } from "./lib/parse";
 import { buildQueue, categoriesOf, isDueCallback, isSnoozed, sessionStats } from "./lib/queue";
 import { createSampleCsv } from "./lib/sample";
@@ -398,10 +399,7 @@ export default function App() {
 
     const nextLead = advanceFrom(lead.placeId);
     if (settings.dialerMode && nextLead?.phone) {
-      const phone = digitsOnly(nextLead.phone);
-      window.setTimeout(() => {
-        window.location.href = `tel:${phone}`;
-      }, 60);
+      openCallTarget(buildCallTarget(nextLead.phone, settings), nextLead.phone);
     }
   };
 
@@ -566,6 +564,23 @@ export default function App() {
     downloadCsv(`lead-dialer-call-log-${exportStamp()}.csv`, buildCallLogCsv(currentLeads));
     push(`${calls.toLocaleString()} call attempts exported`, "success");
     setExportOpen(false);
+  };
+
+  /** Hand the number to whichever destination is configured in Settings. */
+  const openCallTarget = (target: CallTarget, phone: string) => {
+    if (!target.href) {
+      push("Add your dialer URL in Settings → Where calls open", "error");
+      return;
+    }
+    if (!target.newTab) {
+      window.location.href = target.href;
+      return;
+    }
+    if (target.copyNumber && phone) {
+      void navigator.clipboard?.writeText(phone).catch(() => undefined);
+    }
+    const opened = window.open(target.href, "_blank", "noopener,noreferrer");
+    if (!opened) push("Pop-up blocked — allow pop-ups for this site, or tap the number", "error");
   };
 
   const callWebhook = (phone: string) => {

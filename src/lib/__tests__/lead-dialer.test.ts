@@ -1,5 +1,6 @@
 import Papa from "papaparse";
 import { describe, expect, it } from "vitest";
+import { buildCallTarget, describeCallTarget } from "../call";
 import { buildCallLogCsv, buildWorkingCsv, EXTRA_COLUMNS, mergeHeaderNames } from "../export";
 import { expandScientific, formatPhone, getOpenState, normalizePhone } from "../format";
 import { buildLeads, parseFile, type ParsedTable } from "../parse";
@@ -314,6 +315,44 @@ describe("exports", () => {
     expect(parsed.data[0]).toMatchObject({ lead: "Acme", disposition: "Left voicemail", note: "Left details" });
     expect(parsed.data[1].disposition).toBe("No answer");
     expect(parsed.data[0].timestamp > parsed.data[1].timestamp).toBe(true);
+  });
+});
+
+describe("call destinations", () => {
+  const phone = "+15122801680";
+
+  it("defaults to a tel: handoff for the phone app", () => {
+    const target = buildCallTarget(phone, { callMethod: "tel", callUrlTemplate: "" });
+    expect(target).toMatchObject({ href: "tel:+15122801680", newTab: false, copyNumber: false, label: "Phone app" });
+  });
+
+  it("prefills Google Voice's documented call URL", () => {
+    const target = buildCallTarget(phone, { callMethod: "google-voice", callUrlTemplate: "" });
+    expect(target.href).toBe("https://voice.google.com/u/0/calls?a=nc,%2B15122801680");
+    expect(target.newTab).toBe(true);
+    expect(target.prefilled).toBe(true);
+  });
+
+  it("opens web dialers that have no dial link and copies the number instead", () => {
+    for (const callMethod of ["mightycall", "rynga"] as const) {
+      const target = buildCallTarget(phone, { callMethod, callUrlTemplate: "" });
+      expect(target.href.startsWith("https://")).toBe(true);
+      expect(target.newTab).toBe(true);
+      expect(target.copyNumber).toBe(true);
+      expect(describeCallTarget(target)).toContain("copied");
+    }
+  });
+
+  it("builds custom dialer URLs from the {phone} template", () => {
+    const templated = buildCallTarget(phone, { callMethod: "custom", callUrlTemplate: "https://dial.test/call?n={phone}" });
+    expect(templated.href).toBe("https://dial.test/call?n=%2B15122801680");
+
+    const appended = buildCallTarget(phone, { callMethod: "custom", callUrlTemplate: "https://dial.test/call" });
+    expect(appended.href).toBe("https://dial.test/call?phone=%2B15122801680");
+
+    // An empty template must never leave the call button dead.
+    const empty = buildCallTarget(phone, { callMethod: "custom", callUrlTemplate: "" });
+    expect(empty.href).toBe("tel:+15122801680");
   });
 });
 

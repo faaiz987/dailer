@@ -11,6 +11,7 @@ import {
   Zap,
 } from "lucide-react";
 import { useEffect, useState } from "react";
+import { CALL_METHOD_OPTIONS } from "../lib/call";
 import type { AppSettings } from "../lib/types";
 import { Badge, Button, Dialog, Input, Label, Select, Switch } from "./ui";
 
@@ -109,9 +110,47 @@ export function SettingsDialog({
               </Select>
             </div>
           </div>
+          <div>
+            <Label>Where calls open</Label>
+            <Select
+              value={settings.callMethod}
+              onChange={(event) => onUpdate({ callMethod: event.target.value as AppSettings["callMethod"] })}
+            >
+              {CALL_METHOD_OPTIONS.map((option) => (
+                <option key={option.value} value={option.value}>
+                  {option.label}
+                </option>
+              ))}
+            </Select>
+            <p className="mt-1.5 text-[11px] leading-relaxed text-muted-foreground">
+              {CALL_METHOD_OPTIONS.find((option) => option.value === settings.callMethod)?.hint}
+            </p>
+          </div>
+          {settings.callMethod === "custom" && (
+            <div>
+              <Label>Custom dialer URL</Label>
+              <Input
+                value={settings.callUrlTemplate}
+                onChange={(event) => onUpdate({ callUrlTemplate: event.target.value })}
+                placeholder="https://your-dialer.example/call?number={phone}"
+                spellCheck={false}
+                inputMode="url"
+              />
+              <p className="mt-1.5 text-[11px] leading-relaxed text-muted-foreground">
+                <code className="rounded bg-muted px-1 py-0.5 text-foreground">{"{phone}"}</code> is replaced with the
+                E.164 number (e.g. <span className="font-mono">%2B15122801680</span>) and opened in a new tab. Without
+                the placeholder the number is appended as <span className="font-mono">?phone=</span>. Leave empty to keep
+                using your phone app.
+              </p>
+            </div>
+          )}
           <ToggleRow
             title="Dialer mode"
-            description="Automatically open the tel: link for the next lead after every disposition. Your softphone must be the default handler."
+            description={
+              settings.callMethod === "tel"
+                ? "Automatically open the tel: link for the next lead after every disposition. Your softphone must be the default handler."
+                : "Automatically open the chosen call destination for the next lead after every disposition."
+            }
             checked={settings.dialerMode}
             onChange={(dialerMode) => onUpdate({ dialerMode })}
           />
@@ -173,7 +212,7 @@ export function SettingsDialog({
                 parameter.
               </>
             ) : (
-              "No webhook configured. The standard tel: link still works everywhere."
+              "No webhook configured. The call button still uses the destination set above."
             )}
           </div>
         </Section>

@@ -21,12 +21,12 @@ import {
   Zap,
 } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
+import { buildCallTarget, describeCallTarget } from "../lib/call";
 import {
   buildAddress,
   formatDateTime,
   formatPhone,
   getOpenState,
-  telHref,
   todayInChicago,
 } from "../lib/format";
 import { flagsFor } from "../lib/queue";
@@ -188,6 +188,7 @@ export function Dialer({
     ? lead.url ||
       `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(`${lead.title} ${address}`)}`
     : "";
+  const callTarget = lead?.phone ? buildCallTarget(lead.phone, settings) : null;
 
   const distribution = useMemo(() => {
     if (!lead) return [];
@@ -421,11 +422,17 @@ export function Dialer({
         {/* Phone */}
         <div className="rounded-lg border border-primary/25 bg-primary/[0.06] p-3 sm:p-4">
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-            {lead.phone ? (
+            {lead.phone && callTarget ? (
               <a
-                href={telHref(lead.phone)}
+                href={callTarget.href}
+                target={callTarget.newTab ? "_blank" : undefined}
+                rel={callTarget.newTab ? "noreferrer" : undefined}
+                onClick={() => {
+                  if (callTarget.copyNumber) void copyPhone();
+                }}
                 className="group inline-flex max-w-full items-center gap-3 rounded-md text-[clamp(1.45rem,6.5vw,2.6rem)] font-semibold tracking-tight text-primary transition-colors hover:text-primary/80"
-                title="Call with your default phone app"
+                title={describeCallTarget(callTarget)}
+                data-testid="lead-call-button"
               >
                 <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-sm transition-transform group-hover:scale-105 sm:h-12 sm:w-12">
                   <Phone className="h-5 w-5 sm:h-6 sm:w-6" />
@@ -462,7 +469,8 @@ export function Dialer({
             <span className="font-mono">{lead.phone || "—"}</span>
             <span className="text-border">|</span>
             <span>
-              Click the number to call · auto-dial is {settings.dialerMode ? "on" : "off"}
+              Click the number to call · {callTarget ? describeCallTarget(callTarget) : "no number"} · auto-dial is{" "}
+              {settings.dialerMode ? "on" : "off"}
             </span>
           </div>
         </div>

@@ -1,6 +1,7 @@
 import { ClipboardPaste, Copy, Delete, Phone, Zap } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
-import { formatPhone, normalizePhone, telHref } from "../lib/format";
+import { buildCallTarget, describeCallTarget } from "../lib/call";
+import { formatPhone, normalizePhone } from "../lib/format";
 import type { AppSettings, Lead } from "../lib/types";
 import { cn } from "../lib/utils";
 import { Button, Dialog, Input, Kbd, buttonVariants, useToast } from "./ui";
@@ -56,6 +57,7 @@ export function Dialpad({
   const dialTarget = e164 || value.trim();
   const formatted = e164 ? formatPhone(e164) : value;
   const canCall = digits.length > 0;
+  const callTarget = buildCallTarget(canCall ? dialTarget : "", settings);
 
   const append = (chunk: string) => {
     setValue((prev) => sanitize(prev + chunk));
@@ -92,7 +94,7 @@ export function Dialpad({
       push("Type or tap a number first", "error");
       return;
     }
-    push(`Opening phone app · ${formatted}`, "info");
+    push(`Opening ${callTarget.label} · ${formatted}`, "info");
     window.setTimeout(onClose, 280);
   };
 
@@ -102,7 +104,13 @@ export function Dialpad({
       return;
     }
     announce();
-    window.location.href = telHref(dialTarget);
+    if (callTarget.copyNumber) void copy();
+    if (callTarget.newTab) {
+      const win = window.open(callTarget.href, "_blank", "noopener,noreferrer");
+      if (!win) push("Pop-up blocked — allow pop-ups for this site", "error");
+      return;
+    }
+    window.location.href = callTarget.href;
   };
 
   return (
@@ -110,7 +118,7 @@ export function Dialpad({
       open={open}
       onClose={onClose}
       title="Dialpad"
-      description="Manual dialing for numbers that aren't in your list. Calls hand off to your phone app — nothing is uploaded."
+      description={`Manual dialing for numbers that aren't in your list. Calls open in ${callTarget.label} — nothing is uploaded.`}
       size="sm"
     >
       <div className="space-y-3">
@@ -176,10 +184,16 @@ export function Dialpad({
         <div className="flex items-center gap-2">
           {canCall ? (
             <a
-              href={telHref(dialTarget)}
-              onClick={announce}
+              href={callTarget.href}
+              target={callTarget.newTab ? "_blank" : undefined}
+              rel={callTarget.newTab ? "noreferrer" : undefined}
+              onClick={() => {
+                if (callTarget.copyNumber) void copy();
+                announce();
+              }}
               className={cn(buttonVariants({ size: "lg" }), "h-12 flex-1 text-base")}
-              title="Call with your default phone app"
+              title={describeCallTarget(callTarget)}
+              data-testid="dialpad-call-button"
             >
               <Phone />
               Call {formatted}
@@ -232,9 +246,18 @@ export function Dialpad({
         )}
 
         <p className="text-[11px] leading-relaxed text-muted-foreground">
-          <Kbd>tel:</Kbd> links open your default softphone (Dialpad, Aircall, Google Voice, FaceTime) or your cell. Enter
-          dials, <Kbd>Esc</Kbd> closes. If nothing happens, set an app for <span className="font-mono">tel:</span> links in
-          your OS or use the cloud phone webhook in Settings.
+          {settings.callMethod === "tel" ? (
+            <>
+              <Kbd>tel:</Kbd> links open your default softphone (Dialpad, Aircall, Google Voice, FaceTime) or your cell.
+              Enter dials, <Kbd>Esc</Kbd> closes. If nothing happens on your phone, switch “Where calls open” in Settings
+              to a browser dialer.
+            </>
+          ) : (
+            <>
+              Calls open in <span className="text-foreground">{callTarget.label}</span> — change that under “Where calls
+              open” in Settings. Enter dials, <Kbd>Esc</Kbd> closes.
+            </>
+          )}
         </p>
       </div>
     </Dialog>
