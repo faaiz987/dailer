@@ -2,7 +2,7 @@ import Papa from "papaparse";
 import { describe, expect, it } from "vitest";
 import { buildCallTarget, describeCallTarget } from "../call";
 import { buildCallLogCsv, buildWorkingCsv, EXTRA_COLUMNS, mergeHeaderNames } from "../export";
-import { expandScientific, formatPhone, getOpenState, normalizePhone } from "../format";
+import { expandScientific, formatPhone, getOpenState, normalizePhone, telHref } from "../format";
 import { buildLeads, parseFile, type ParsedTable } from "../parse";
 import { buildQueue, flagsFor, isDueCallback, sessionStats } from "../queue";
 import { createSampleCsv } from "../sample";
@@ -331,6 +331,8 @@ describe("call destinations", () => {
     expect(target.href).toBe("https://voice.google.com/u/0/calls?a=nc,%2B15122801680");
     expect(target.newTab).toBe(true);
     expect(target.prefilled).toBe(true);
+    // The link carries only the destination — the caller ID is the signed-in Google account.
+    expect(describeCallTarget(target)).toContain("signed in");
   });
 
   it("opens web dialers that have no dial link and copies the number instead", () => {
@@ -353,6 +355,10 @@ describe("call destinations", () => {
     // An empty template must never leave the call button dead.
     const empty = buildCallTarget(phone, { callMethod: "custom", callUrlTemplate: "" });
     expect(empty.href).toBe("tel:+15122801680");
+  });
+
+  it("offers a tel: fallback when a web dialer disappoints", () => {
+    expect(telHref(phone)).toBe("tel:+15122801680");
   });
 });
 

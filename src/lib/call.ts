@@ -23,7 +23,7 @@ export const CALL_METHOD_OPTIONS: Array<{ value: CallMethod; label: string; hint
   {
     value: "google-voice",
     label: "Google Voice (web)",
-    hint: "Opens Google Voice's call page with the number prefilled. Works best signed in to Voice in this browser (desktop).",
+    hint: "Opens Google Voice's call page with the number prefilled. The tab must already be signed in to the Google account that owns your Voice number — otherwise Google shows its sign-up page.",
   },
   {
     value: "mightycall",
@@ -130,5 +130,6 @@ export function describeCallTarget(target: CallTarget): string {
   if (!target.href) return "Set a custom dialer URL in Settings";
   if (target.copyNumber) return `Opens ${target.label} — number copied, paste it in`;
   if (!target.prefilled && target.label === "Phone app") return "Opens your phone app";
+  if (target.label === "Google Voice") return "Opens Google Voice with this number — needs that account signed in";
   return `Opens ${target.label}${target.prefilled ? " with this number" : ""}`;
 }

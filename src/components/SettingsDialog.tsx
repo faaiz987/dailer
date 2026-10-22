@@ -125,6 +125,29 @@ export function SettingsDialog({
             <p className="mt-1.5 text-[11px] leading-relaxed text-muted-foreground">
               {CALL_METHOD_OPTIONS.find((option) => option.value === settings.callMethod)?.hint}
             </p>
+            {settings.callMethod === "google-voice" && (
+              <div className="mt-2 space-y-1.5 rounded-md border border-dashed px-2.5 py-2 text-[11px] leading-relaxed text-muted-foreground">
+                <p>
+                  The link only carries the number to <em>call</em>. Your caller ID and voice line come from whichever
+                  Google account is signed in to Voice in the tab that opens — this app never sees or sends your Voice
+                  number. Landing on Google's sign-up page means that browser isn't signed in to a Google account with
+                  Voice set up.
+                </p>
+                <a
+                  href="https://voice.google.com/"
+                  target="_blank"
+                  rel="noreferrer"
+                  className="inline-flex items-center gap-1 font-medium text-foreground underline underline-offset-2"
+                >
+                  <PhoneCall className="h-3 w-3" /> Sign in to Voice and check the account
+                </a>
+                <p>
+                  On a phone, the Voice web dialer is unreliable. Set this to <strong>Phone app</strong> and let Voice
+                  handle the call (Android: Voice → Settings → Making calls → Use your Google Voice number), or use
+                  "Use the phone app instead" on the dialpad.
+                </p>
+              </div>
+            )}
           </div>
           {settings.callMethod === "custom" && (
             <div>

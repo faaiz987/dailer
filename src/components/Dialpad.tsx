@@ -1,7 +1,7 @@
 import { ClipboardPaste, Copy, Delete, Phone, Zap } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { buildCallTarget, describeCallTarget } from "../lib/call";
-import { formatPhone, normalizePhone } from "../lib/format";
+import { formatPhone, normalizePhone, telHref } from "../lib/format";
 import type { AppSettings, Lead } from "../lib/types";
 import { cn } from "../lib/utils";
 import { Button, Dialog, Input, Kbd, buttonVariants, useToast } from "./ui";
@@ -216,6 +216,21 @@ export function Dialpad({
             <Copy />
           </Button>
         </div>
+
+        {settings.callMethod !== "tel" && (
+          <button
+            type="button"
+            disabled={!canCall}
+            onClick={() => {
+              if (!canCall) return;
+              window.location.href = telHref(e164 || dialTarget);
+              onClose();
+            }}
+            className="w-full text-center text-[11px] text-muted-foreground underline underline-offset-2 transition-colors hover:text-foreground disabled:opacity-50"
+          >
+            {callTarget.label} not working? Use the phone app instead
+          </button>
+        )}
 
         {settings.webhookUrl && (
           <Button
